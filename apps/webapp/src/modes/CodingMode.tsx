@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Editor from '@monaco-editor/react';
 import { useEditorStore } from '../store/editorStore';
+import { generateId } from '../utils/helpers';
 
 interface Tab {
   id: string;
@@ -31,7 +32,7 @@ export const CodingMode: React.FC = () => {
 
   const addTab = () => {
     const newTab: Tab = {
-      id: Date.now().toString(),
+      id: generateId(),
       name: `file${tabs.length + 1}.js`,
       language: 'javascript',
       content: '',

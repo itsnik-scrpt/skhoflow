@@ -46,10 +46,16 @@ export const DocumentModel = {
       fields.push(`content = $${idx++}`);
       values.push(updates.content);
     }
+
+    if (fields.length === 0) {
+      return this.findById(id, userId);
+    }
+
+    fields.push('updated_at = NOW()');
     values.push(id, userId);
 
     const result = await pool.query(
-      `UPDATE documents SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx++} AND user_id = $${idx} RETURNING *`,
+      `UPDATE documents SET ${fields.join(', ')} WHERE id = $${idx++} AND user_id = $${idx} RETURNING *`,
       values
     );
     return result.rows[0] || null;

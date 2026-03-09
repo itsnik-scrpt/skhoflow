@@ -18,7 +18,9 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
     const payload = jwt.verify(token, config.jwtSecret) as { userId: string };
     req.userId = payload.userId;
     next();
-  } catch {
-    res.status(401).json({ status: 401, message: 'Invalid token', error: 'UNAUTHORIZED' });
+  } catch (err) {
+    const isExpired = err instanceof Error && err.name === 'TokenExpiredError';
+    const message = isExpired ? 'Token has expired' : 'Invalid token';
+    res.status(401).json({ status: 401, message, error: 'UNAUTHORIZED' });
   }
 }
