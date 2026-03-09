@@ -25,7 +25,21 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(cors({ origin: config.frontendUrl, credentials: true }));
+const allowedOrigins = (config.frontendUrl || 'http://localhost:5173')
+  .split(',')
+  .map(o => o.trim())
+  .concat(['http://localhost:5173', 'http://localhost:5174']);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 

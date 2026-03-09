@@ -1,52 +1,201 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  * {
-    box-sizing: border-box;
-  }
+/* ─── Color palette ──────────────────────────────────────────── */
+:root {
+  --black:       #0a0a0a;
+  --white:       #f8f4ef;
+  --red:         #c0392b;
+  --red-soft:    rgba(192,57,43,0.1);
+  --gold:        #c9962a;
+  --gold-soft:   rgba(201,150,42,0.12);
+  --orange:      #d4621a;
 
-  body {
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  .prose {
-    max-width: none;
-  }
-
-  .ProseMirror {
-    outline: none;
-    min-height: 600px;
-  }
-
-  .ProseMirror p {
-    margin-bottom: 1em;
-  }
-
-  .ProseMirror h1 {
-    font-size: 2em;
-    font-weight: 700;
-    margin-bottom: 0.5em;
-  }
-
-  .ProseMirror h2 {
-    font-size: 1.5em;
-    font-weight: 700;
-    margin-bottom: 0.5em;
-  }
-
-  .ProseMirror ul {
-    list-style: disc;
-    padding-left: 1.5em;
-    margin-bottom: 1em;
-  }
-
-  .ProseMirror ol {
-    list-style: decimal;
-    padding-left: 1.5em;
-    margin-bottom: 1em;
-  }
+  /* Light theme */
+  --bg:          #f8f4ef;
+  --bg-2:        #ffffff;
+  --bg-3:        #f0ebe3;
+  --surface:     rgba(255,255,255,0.75);
+  --surface-2:   rgba(240,235,227,0.7);
+  --border:      rgba(10,10,10,0.09);
+  --border-2:    rgba(10,10,10,0.05);
+  --text-1:      #0a0a0a;
+  --text-2:      #3a3530;
+  --text-3:      #8a8078;
+  --accent:      #c0392b;
+  --accent-2:    #c9962a;
+  --accent-soft: rgba(192,57,43,0.08);
 }
+
+.dark {
+  --bg:          #0a0a0a;
+  --bg-2:        #141210;
+  --bg-3:        #1e1b18;
+  --surface:     rgba(20,18,16,0.8);
+  --surface-2:   rgba(30,27,24,0.7);
+  --border:      rgba(248,244,239,0.1);
+  --border-2:    rgba(248,244,239,0.05);
+  --text-1:      #f8f4ef;
+  --text-2:      #c8c0b4;
+  --text-3:      #6a6058;
+  --accent:      #e05a4a;
+  --accent-2:    #d4a840;
+  --accent-soft: rgba(224,90,74,0.12);
+}
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Nunito', system-ui, sans-serif;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: 'Nunito', system-ui, sans-serif;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+  /* Smooth theme transition on all elements */
+  *, *::before, *::after {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+    transition-duration: 0.35s;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* But don't slow down transforms/opacity for animations */
+  .no-theme-transition, .no-theme-transition * {
+    transition-duration: 0s !important;
+  }
+  /* Everything inherits Nunito unless explicitly overridden with Cormorant */
+  h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select, label {
+    font-family: inherit;
+  }
+  ::selection { background: rgba(192,57,43,0.18); }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+}
+
+@layer components {
+  /* Glass */
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+  .glass-2 {
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-200 select-none;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-primary {
+    @apply btn px-6 py-3 text-sm text-white;
+    background: var(--accent);
+    box-shadow: 0 2px 16px rgba(192,57,43,0.28);
+  }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    @apply btn px-6 py-3 text-sm;
+    color: var(--text-1);
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--surface-2); transform: translateY(-1px); }
+
+  /* Input */
+  .input {
+    @apply w-full px-4 py-3 rounded-2xl text-sm outline-none transition-all duration-200;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    font-family: 'Nunito', sans-serif;
+  }
+  .input::placeholder { color: var(--text-3); }
+  .input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .label { @apply block text-xs font-semibold mb-1.5 uppercase tracking-widest; color: var(--text-3); }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold;
+    background: var(--gold-soft);
+    color: var(--gold);
+    border: 1px solid rgba(201,150,42,0.2);
+    font-family: 'Nunito', sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    transition: box-shadow 0.25s, transform 0.25s;
+  }
+  .card:hover { box-shadow: 0 16px 48px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .dark .card:hover { box-shadow: 0 16px 48px rgba(0,0,0,0.5); }
+
+  /* Serif display font utility */
+  .font-serif { font-family: 'Cormorant Garamond', Georgia, serif !important; }
+  .font-display { font-family: 'Nunito', sans-serif !important; }
+}
+
+@layer utilities {
+  .text-1 { color: var(--text-1); }
+  .text-2 { color: var(--text-2); }
+  .text-3 { color: var(--text-3); }
+  .bg-surface { background: var(--surface); }
+  .border-theme { border-color: var(--border); }
+  .animate-delay-100 { animation-delay: 0.1s; }
+  .animate-delay-200 { animation-delay: 0.2s; }
+  .animate-delay-300 { animation-delay: 0.3s; }
+  .animate-delay-400 { animation-delay: 0.4s; }
+}
+
+/* ─── Partner logo filter (theme-driven, never flashes) ──────── */
+/* Default = light theme = crush to black */
+.partner-logo { filter: brightness(0) !important; transition: filter 0.3s; }
+/* Dark theme = crush to black then invert to white */
+.dark .partner-logo { filter: brightness(0) invert(1) !important; }
+
+/* ─── Typed text animation ───────────────────────────────────── */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.cursor-blink::after { content:'|'; animation: blink 1s step-end infinite; margin-left:2px; color: var(--accent); }
+
+/* ─── Smooth link/button transitions ────────────────────────── */
+a, button { transition: opacity 0.2s, transform 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s, filter 0.2s; }
+
+/* ─── Scroll reveal utility ──────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ─── Page transitions ───────────────────────────────────────── */
+.page-enter { animation: pageIn 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ProseMirror */
+.ProseMirror { outline: none; min-height: 500px; line-height: 1.75; color: var(--text-1); font-family: 'Nunito', sans-serif; }
+.ProseMirror p { margin-bottom: 0.9em; }
+.ProseMirror h1 { font-size: 2em; font-weight: 700; margin: 1em 0 0.4em; font-family: 'Cormorant Garamond', serif; }
+.ProseMirror h2 { font-size: 1.5em; font-weight: 600; margin: 0.8em 0 0.4em; font-family: 'Cormorant Garamond', serif; }
+.ProseMirror h3 { font-size: 1.25em; font-weight: 600; margin: 0.6em 0 0.3em; }
+.ProseMirror ul { list-style: disc; padding-left: 1.5em; margin-bottom: 0.9em; }
+.ProseMirror ol { list-style: decimal; padding-left: 1.5em; margin-bottom: 0.9em; }
+.ProseMirror blockquote { border-left: 3px solid var(--accent); padding-left: 1em; color: var(--text-3); margin: 1em 0; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1em; }
+.ProseMirror pre { background: var(--bg-3); padding: 1em; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.875em; margin: 1em 0; overflow-x: auto; }
+.ProseMirror code { background: var(--bg-3); padding: 0.15em 0.4em; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.875em; }
