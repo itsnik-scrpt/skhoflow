@@ -222,6 +222,17 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
   };
 
   const sel = slide?.elements.find(e => e.id === selectedId);
+  const ui = {
+    bg: 'var(--bg)',
+    panel: 'var(--bg-2)',
+    panelAlt: 'var(--bg-3)',
+    border: 'var(--border)',
+    text: 'var(--text-1)',
+    textSoft: 'var(--text-2)',
+    textMuted: 'var(--text-3)',
+    accent: 'var(--accent)',
+    accentSoft: 'var(--accent-soft)',
+  } as const;
 
   const handleSave = async (name: string, format: SaveFormat) => {
     if (docId) updateDocument(docId, { title: name, content: JSON.stringify(slides), updatedAt: new Date() });
@@ -232,26 +243,26 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" style={{ background: 'var(--bg)', color: 'var(--text-1)' }}>
+    <div className="flex flex-col h-full overflow-hidden" style={{ background: ui.bg, color: ui.text }}>
       <SaveDialog open={saveOpen} defaultName={fileName} type="slides" onSave={handleSave} onClose={() => setSaveOpen(false)} />
 
       {/* Standalone title bar */}
       {standaloneMode && (
         <div className="flex items-center gap-3 px-4 py-2 flex-shrink-0"
-          style={{ background: 'var(--bg-2)', borderBottom: '1px solid var(--border)' }}>
-          <LayoutTemplate size={15} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-          <span className="text-sm font-bold truncate" style={{ color: 'var(--text-1)', fontFamily: 'Nunito, sans-serif' }}>
+          style={{ background: ui.panel, borderBottom: `1px solid ${ui.border}` }}>
+          <LayoutTemplate size={15} style={{ color: ui.accent, flexShrink: 0 }} />
+          <span className="text-sm font-bold truncate" style={{ color: ui.text, fontFamily: 'Nunito, sans-serif' }}>
             {fileName}{dirty ? ' ●' : ''}
           </span>
           <div className="ml-auto flex items-center gap-2">
             <motion.button onClick={openFile} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold"
-              style={{ background: 'var(--bg-3)', color: 'var(--text-2)', fontFamily: 'Nunito, sans-serif', border: '1px solid var(--border)' }}>
+              style={{ background: ui.panelAlt, color: ui.textSoft, fontFamily: 'Nunito, sans-serif', border: `1px solid ${ui.border}` }}>
               <FolderOpen size={13} /> Open
             </motion.button>
             <motion.button onClick={() => setSaveOpen(true)} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold"
-              style={{ background: 'var(--text-1)', color: 'var(--bg)', fontFamily: 'Nunito, sans-serif' }}>
+              style={{ background: ui.text, color: ui.bg, fontFamily: 'Nunito, sans-serif' }}>
               <Save size={13} /> Save
             </motion.button>
           </div>
@@ -261,10 +272,10 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
       <div className="flex flex-1 overflow-hidden">
 
       {/* Slides strip */}
-      <div className="w-[130px] flex-shrink-0 flex flex-col" style={{ background: 'var(--bg-2)', borderRight: '1px solid var(--border)' }}>
-        <div className="flex items-center justify-between px-2.5 py-2 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
-          <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-3)', fontFamily: 'Nunito, sans-serif' }}>Slides</span>
-          <button onClick={addSlide} className="p-1 rounded-lg transition-all hover:opacity-80" style={{ color: 'var(--accent)', background: 'var(--accent-soft)' }}>
+      <div className="w-[146px] flex-shrink-0 flex flex-col" style={{ background: ui.panel, borderRight: `1px solid ${ui.border}` }}>
+        <div className="flex items-center justify-between px-2.5 py-2 flex-shrink-0" style={{ borderBottom: `1px solid ${ui.border}` }}>
+          <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: ui.textMuted, fontFamily: 'Nunito, sans-serif' }}>Slides</span>
+          <button onClick={addSlide} className="p-1 rounded-lg transition-all hover:opacity-80" style={{ color: ui.accent, background: ui.accentSoft }}>
             <Plus size={11} />
           </button>
         </div>
@@ -272,7 +283,7 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
           {slides.map((s, i) => (
             <div key={s.id} onClick={() => { setActiveIdx(i); setSelectedId(null); setEditingId(null); }}
               className="relative group rounded-lg overflow-hidden cursor-pointer"
-              style={{ aspectRatio: '16/9', background: s.background || '#fff', border: `2px solid ${i === activeIdx ? 'var(--accent)' : 'var(--border)'}`, transition: 'border-color 0.15s' }}>
+              style={{ aspectRatio: '16/9', background: s.background || '#fff', border: `2px solid ${i === activeIdx ? ui.accent : ui.border}`, transition: 'border-color 0.15s' }}>
               <span className="absolute bottom-0.5 left-1 text-[9px] font-bold" style={{ color: '#9ca3af' }}>{i + 1}</span>
               {slides.length > 1 && (
                 <button onClick={e => { e.stopPropagation(); delSlide(i); }}
@@ -290,7 +301,7 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Toolbar */}
         <div className="flex items-center flex-wrap gap-1 px-3 py-1.5 flex-shrink-0"
-          style={{ background: 'var(--bg-2)', borderBottom: '1px solid var(--border)' }}>
+          style={{ background: ui.panel, borderBottom: `1px solid ${ui.border}` }}>
           {[
             { t: 'text' as const,      icon: <Type size={12} />,   label: 'Text' },
             { t: 'rectangle' as const, icon: <Square size={12} />, label: 'Rect' },
@@ -298,33 +309,33 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
           ].map(({ t, icon, label }) => (
             <button key={t} onClick={() => addEl(t)}
               className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
-              style={{ background: 'var(--bg-3)', color: 'var(--text-2)', fontFamily: 'Nunito, sans-serif' }}>
+              style={{ background: ui.panelAlt, color: ui.textSoft, fontFamily: 'Nunito, sans-serif' }}>
               {icon}{label}
             </button>
           ))}
-          <div className="w-px h-4 mx-0.5" style={{ background: 'var(--border)' }} />
+          <div className="w-px h-4 mx-0.5" style={{ background: ui.border }} />
 
           {sel?.type === 'text' && (<>
             <select value={sel.style?.fontSize || '20px'}
               onChange={e => mutateEl(sel.id, el => ({ ...el, style: { ...el.style, fontSize: e.target.value } }))}
               className="text-xs rounded-lg px-1.5 py-1 outline-none w-20"
-              style={{ background: 'var(--bg-3)', border: '1px solid var(--border)', color: 'var(--text-2)', fontFamily: 'Nunito, sans-serif' }}>
+              style={{ background: ui.panelAlt, border: `1px solid ${ui.border}`, color: ui.textSoft, fontFamily: 'Nunito, sans-serif' }}>
               {['10px','12px','14px','16px','18px','20px','24px','28px','32px','36px','40px','48px','56px','72px'].map(s => <option key={s}>{s}</option>)}
             </select>
             <button onClick={() => mutateEl(sel.id, el => ({ ...el, style: { ...el.style, fontWeight: el.style?.fontWeight === 'bold' ? 'normal' : 'bold' } }))}
               className="p-1.5 rounded-md transition-all hover:opacity-80"
-              style={{ background: sel.style?.fontWeight === 'bold' ? 'var(--accent-soft)' : 'transparent', color: sel.style?.fontWeight === 'bold' ? 'var(--accent)' : 'var(--text-3)' }}>
+              style={{ background: sel.style?.fontWeight === 'bold' ? ui.accentSoft : 'transparent', color: sel.style?.fontWeight === 'bold' ? ui.accent : ui.textMuted }}>
               <Bold size={12} />
             </button>
             <button onClick={() => mutateEl(sel.id, el => ({ ...el, style: { ...el.style, fontStyle: el.style?.fontStyle === 'italic' ? 'normal' : 'italic' } }))}
               className="p-1.5 rounded-md transition-all hover:opacity-80"
-              style={{ background: sel.style?.fontStyle === 'italic' ? 'var(--accent-soft)' : 'transparent', color: sel.style?.fontStyle === 'italic' ? 'var(--accent)' : 'var(--text-3)' }}>
+              style={{ background: sel.style?.fontStyle === 'italic' ? ui.accentSoft : 'transparent', color: sel.style?.fontStyle === 'italic' ? ui.accent : ui.textMuted }}>
               <Italic size={12} />
             </button>
             {(['left','center','right'] as const).map(a => (
               <button key={a} onClick={() => mutateEl(sel.id, el => ({ ...el, style: { ...el.style, textAlign: a } }))}
                 className="p-1.5 rounded-md transition-all hover:opacity-80"
-                style={{ background: sel.style?.textAlign === a ? 'var(--accent-soft)' : 'transparent', color: sel.style?.textAlign === a ? 'var(--accent)' : 'var(--text-3)' }}>
+                style={{ background: sel.style?.textAlign === a ? ui.accentSoft : 'transparent', color: sel.style?.textAlign === a ? ui.accent : ui.textMuted }}>
                 {a === 'left' ? <AlignLeft size={12} /> : a === 'center' ? <AlignCenter size={12} /> : <AlignRight size={12} />}
               </button>
             ))}
@@ -358,8 +369,8 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
 
           <div className="ml-auto flex items-center gap-1">
             <button onClick={undo} className="p-1.5 rounded-md hover:opacity-80 transition-all" style={{ color: 'var(--text-3)', background: 'var(--bg-3)' }}><Undo2 size={12} /></button>
-            <button onClick={redo} className="p-1.5 rounded-md hover:opacity-80 transition-all" style={{ color: 'var(--text-3)', background: 'var(--bg-3)' }}><Redo2 size={12} /></button>
-            <div className="w-px h-4 mx-0.5" style={{ background: 'var(--border)' }} />
+            <button onClick={redo} className="p-1.5 rounded-md hover:opacity-80 transition-all" style={{ color: ui.textMuted, background: ui.panelAlt }}><Redo2 size={12} /></button>
+            <div className="w-px h-4 mx-0.5" style={{ background: ui.border }} />
             <label className="text-xs flex items-center gap-1 cursor-pointer" style={{ color: 'var(--text-3)', fontFamily: 'Nunito, sans-serif' }}>
               BG
               <input type="color" value={slide?.background || '#ffffff'}
@@ -370,13 +381,13 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
         </div>
 
         {/* Canvas */}
-        <div className="flex-1 overflow-auto flex items-center justify-center p-6" style={{ background: 'var(--bg-3)' }}>
+        <div className="flex-1 overflow-auto flex items-center justify-center p-6" style={{ background: `linear-gradient(180deg, ${ui.panelAlt}, ${ui.bg})` }}>
           <div ref={canvasRef}
             onPointerDown={onCanvasPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             className="relative select-none"
-            style={{ width: '100%', maxWidth: CW, aspectRatio: `${CW}/${CH}`, background: slide?.background || '#fff', boxShadow: '0 8px 40px rgba(0,0,0,0.2)', borderRadius: 4 }}>
+            style={{ width: '100%', maxWidth: CW, aspectRatio: `${CW}/${CH}`, background: slide?.background || '#fff', boxShadow: '0 12px 36px rgba(0,0,0,0.2)', borderRadius: 12, border: `1px solid ${ui.border}` }}>
             {slide?.elements.map(el => {
               const pct = (v: number, base: number) => `${(v / base) * 100}%`;
               const isSel = selectedId === el.id;
@@ -436,8 +447,8 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
 
       {/* Properties panel */}
       <div className="w-[160px] flex-shrink-0 overflow-y-auto p-3 space-y-3"
-        style={{ background: 'var(--bg-2)', borderLeft: '1px solid var(--border)' }}>
-        <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-3)', fontFamily: 'Nunito, sans-serif' }}>Properties</p>
+        style={{ background: ui.panel, borderLeft: `1px solid ${ui.border}` }}>
+        <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: ui.textMuted, fontFamily: 'Nunito, sans-serif' }}>Properties</p>
         {sel ? (
           <>
             <div className="grid grid-cols-2 gap-1.5">
@@ -447,7 +458,7 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
                   <input type="number" value={Math.round(sel[key] as number)}
                     onChange={e => mutateEl(sel.id, el => ({ ...el, [key]: +e.target.value }))}
                     className="w-full px-1.5 py-1 text-xs rounded-lg outline-none"
-                    style={{ background: 'var(--bg-3)', border: '1px solid var(--border)', color: 'var(--text-1)', fontFamily: 'Nunito, sans-serif' }} />
+                    style={{ background: ui.panelAlt, border: `1px solid ${ui.border}`, color: ui.text, fontFamily: 'Nunito, sans-serif' }} />
                 </div>
               ))}
             </div>
@@ -455,11 +466,11 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
               <label className="text-[9px] font-black uppercase tracking-wider block mb-1" style={{ color: 'var(--text-3)', fontFamily: 'Nunito, sans-serif' }}>Layer</label>
               <div className="flex gap-1">
                 <button onClick={() => mutateSlide(s => { const els = [...s.elements]; const i = els.findIndex(e => e.id === sel.id); if (i < els.length - 1) { [els[i], els[i+1]] = [els[i+1], els[i]]; } return { ...s, elements: els }; })}
-                  className="flex-1 py-1 rounded-lg text-xs transition-all hover:opacity-80" style={{ background: 'var(--bg-3)', color: 'var(--text-3)' }}>
+                  className="flex-1 py-1 rounded-lg text-xs transition-all hover:opacity-80" style={{ background: ui.panelAlt, color: ui.textMuted }}>
                   <ChevronUp size={12} className="mx-auto" />
                 </button>
                 <button onClick={() => mutateSlide(s => { const els = [...s.elements]; const i = els.findIndex(e => e.id === sel.id); if (i > 0) { [els[i], els[i-1]] = [els[i-1], els[i]]; } return { ...s, elements: els }; })}
-                  className="flex-1 py-1 rounded-lg text-xs transition-all hover:opacity-80" style={{ background: 'var(--bg-3)', color: 'var(--text-3)' }}>
+                  className="flex-1 py-1 rounded-lg text-xs transition-all hover:opacity-80" style={{ background: ui.panelAlt, color: ui.textMuted }}>
                   <ChevronDown size={12} className="mx-auto" />
                 </button>
               </div>
@@ -488,11 +499,10 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
           <textarea value={slide?.notes || ''} onChange={e => mutateSlide(s => ({ ...s, notes: e.target.value }))}
             rows={3} placeholder="Speaker notes…"
             className="w-full px-2 py-1 text-xs rounded-lg outline-none resize-none"
-            style={{ background: 'var(--bg-3)', border: '1px solid var(--border)', color: 'var(--text-1)', fontFamily: 'Nunito, sans-serif' }} />
+            style={{ background: ui.panelAlt, border: `1px solid ${ui.border}`, color: ui.text, fontFamily: 'Nunito, sans-serif' }} />
         </div>
       </div>
       </div>{/* end inner flex */}
     </div>
   );
 };
-

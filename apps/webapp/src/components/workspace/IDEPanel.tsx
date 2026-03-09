@@ -248,6 +248,19 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
     setTermInput('');
   };
 
+  const ui = {
+    chrome: 'var(--bg-2)',
+    chromeAlt: 'var(--bg-3)',
+    border: 'var(--border)',
+    text: 'var(--text-1)',
+    textSoft: 'var(--text-2)',
+    textMuted: 'var(--text-3)',
+    accent: 'var(--accent)',
+    accentSoft: 'var(--accent-soft)',
+    gold: 'var(--gold)',
+    goldSoft: 'var(--gold-soft)',
+  } as const;
+
   /* ── Tree node renderer ── */
   const renderTree = (entries: FolderEntry[], depth = 0): React.ReactNode =>
     entries.map(entry => {
@@ -257,16 +270,16 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
         return (
           <div key={entry.path}>
             <div className="group flex items-center gap-1 py-0.5 cursor-pointer transition-colors hover:opacity-80 pr-2"
-              style={{ paddingLeft: indent, color: '#9ca3af' }}
+              style={{ paddingLeft: indent, color: ui.textSoft }}
               onClick={() => setExpanded(s => { const n = new Set(s); isOpen ? n.delete(entry.path) : n.add(entry.path); return n; })}>
               {isOpen ? <ChevDown size={10} style={{ flexShrink: 0 }} /> : <ChevronRight size={10} style={{ flexShrink: 0 }} />}
-              <Folder size={11} style={{ color: '#f59e0b', flexShrink: 0 }} />
-              <span className="flex-1 text-xs truncate" style={{ color: '#d1d5db' }}>{entry.name}</span>
+              <Folder size={11} style={{ color: ui.gold, flexShrink: 0 }} />
+              <span className="flex-1 text-xs truncate" style={{ color: ui.textSoft }}>{entry.name}</span>
               <div className="opacity-0 group-hover:opacity-100 flex gap-0.5">
                 <button onClick={e => { e.stopPropagation(); startCreate(entry.path, 'file'); }} title="New file"
-                  className="p-0.5 rounded hover:text-white transition-colors"><FilePlus size={9} /></button>
+                  className="p-0.5 rounded transition-colors"><FilePlus size={9} /></button>
                 <button onClick={e => { e.stopPropagation(); startCreate(entry.path, 'folder'); }} title="New folder"
-                  className="p-0.5 rounded hover:text-white transition-colors"><FolderPlus size={9} /></button>
+                  className="p-0.5 rounded transition-colors"><FolderPlus size={9} /></button>
                 <button onClick={e => { e.stopPropagation(); deleteFolder(entry.path); }} title="Delete folder"
                   className="p-0.5 rounded hover:text-red-400 transition-colors"><Trash2 size={9} /></button>
               </div>
@@ -280,7 +293,7 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
                   onBlur={commitCreate}
                   onKeyDown={e => { if (e.key === 'Enter') commitCreate(); if (e.key === 'Escape') setCreating(null); }}
                   className="flex-1 text-xs rounded px-1.5 py-0.5 outline-none"
-                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid #3b82f6', color: 'white', fontFamily: 'inherit', minWidth: 0 }}
+                  style={{ background: ui.chromeAlt, border: `1px solid ${ui.accent}`, color: ui.text, fontFamily: 'inherit', minWidth: 0 }}
                   placeholder={creating.type === 'file' ? 'filename.ts' : 'folder-name'} />
               </div>
             )}
@@ -294,52 +307,52 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
       return (
         <div key={file.id}
           className="group flex items-center gap-1 py-0.5 cursor-pointer pr-2 transition-colors"
-          style={{ paddingLeft: indent + 10, background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent' }}
+          style={{ paddingLeft: indent + 10, background: isActive ? ui.accentSoft : 'transparent' }}
           onClick={() => openTab(file.id)}>
           <FileCode size={10} style={{ color: fileColor(file.name), flexShrink: 0 }} />
           {renamingId === file.id ? (
             <input ref={renameRef} value={renameVal} onChange={e => setRenameVal(e.target.value)}
               onBlur={commitRename} onKeyDown={e => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setRenamingId(null); }}
               className="flex-1 text-xs rounded px-1 py-0.5 outline-none min-w-0"
-              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid #3b82f6', color: 'white', fontFamily: 'inherit' }}
+              style={{ background: ui.chromeAlt, border: `1px solid ${ui.accent}`, color: ui.text, fontFamily: 'inherit' }}
               onClick={e => e.stopPropagation()} />
           ) : (
-            <span className="flex-1 text-xs truncate" style={{ color: isActive ? 'white' : '#9ca3af' }}>
-              {file.name}{file.isModified ? <span style={{ color: '#f59e0b' }}> ●</span> : null}
+            <span className="flex-1 text-xs truncate" style={{ color: isActive ? ui.text : ui.textMuted }}>
+              {file.name}{file.isModified ? <span style={{ color: ui.gold }}> ●</span> : null}
             </span>
           )}
           <div className="opacity-0 group-hover:opacity-100 flex gap-0.5">
             <button onClick={e => { e.stopPropagation(); startRename(file); }} title="Rename"
-              className="p-0.5 rounded hover:text-white transition-colors" style={{ color: '#6b7280' }}><Edit3 size={9} /></button>
+              className="p-0.5 rounded transition-colors" style={{ color: ui.textMuted }}><Edit3 size={9} /></button>
             <button onClick={e => { e.stopPropagation(); deleteFile(file.id); }} title="Delete"
-              className="p-0.5 rounded hover:text-red-400 transition-colors" style={{ color: '#6b7280' }}><Trash2 size={9} /></button>
+              className="p-0.5 rounded hover:text-red-400 transition-colors" style={{ color: ui.textMuted }}><Trash2 size={9} /></button>
           </div>
         </div>
       );
     });
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" style={{ fontFamily: '"Fira Code", Consolas, monospace' }}>
+    <div className="flex flex-col h-full overflow-hidden" style={{ background: 'var(--bg)', color: ui.text }}>
       <SaveDialog open={saveOpen} defaultName={projectName} type="ide" onSave={handleSave} onClose={() => setSaveOpen(false)} />
 
       {/* Standalone title bar */}
       {standaloneMode && (
         <div className="flex items-center gap-3 px-4 py-2 flex-shrink-0"
-          style={{ background: '#1a1a2e', borderBottom: '1px solid #2a2a3e' }}>
-          <FolderOpen size={14} style={{ color: '#f59e0b', flexShrink: 0 }} />
-          <span className="text-sm font-bold truncate" style={{ color: 'white', fontFamily: 'Nunito, sans-serif' }}>
+          style={{ background: ui.chrome, borderBottom: `1px solid ${ui.border}` }}>
+          <FolderOpen size={14} style={{ color: ui.gold, flexShrink: 0 }} />
+          <span className="text-sm font-bold truncate" style={{ color: ui.text, fontFamily: 'Nunito, sans-serif' }}>
             {projectName}
-            {files.some(f => f.isModified) && <span style={{ color: '#f59e0b' }}> ●</span>}
+            {files.some(f => f.isModified) && <span style={{ color: ui.gold }}> ●</span>}
           </span>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={openFolder}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:opacity-80"
-              style={{ background: 'rgba(255,255,255,0.08)', color: '#9ca3af', fontFamily: 'Nunito, sans-serif', border: '1px solid #2a2a3e' }}>
+              style={{ background: ui.chromeAlt, color: ui.textSoft, fontFamily: 'Nunito, sans-serif', border: `1px solid ${ui.border}` }}>
               <FolderOpen size={12} /> Open Folder
             </button>
             <button onClick={() => setSaveOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:opacity-80"
-              style={{ background: '#3b82f6', color: 'white', fontFamily: 'Nunito, sans-serif' }}>
+              style={{ background: ui.text, color: 'var(--bg)', fontFamily: 'Nunito, sans-serif' }}>
               <Save size={12} /> Save Archive
             </button>
           </div>
@@ -351,19 +364,19 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
 
       {/* Activity bar */}
       <div className="w-9 flex-shrink-0 flex flex-col items-center gap-1 py-2"
-        style={{ background: '#1a1a2e', borderRight: '1px solid #2a2a3e' }}>
+        style={{ background: ui.chrome, borderRight: `1px solid ${ui.border}` }}>
         <button onClick={() => setSidebarOpen(s => !s)} title="Explorer"
           className="p-2 rounded transition-colors"
-          style={{ color: sidebarOpen ? 'white' : '#6b7280', background: sidebarOpen ? 'rgba(255,255,255,0.1)' : 'transparent' }}>
+          style={{ color: sidebarOpen ? ui.text : ui.textMuted, background: sidebarOpen ? ui.accentSoft : 'transparent' }}>
           <FolderOpen size={14} />
         </button>
         <button onClick={openFolder} title="Open folder"
-          className="p-2 rounded transition-colors hover:text-white" style={{ color: '#6b7280' }}>
+          className="p-2 rounded transition-colors" style={{ color: ui.textMuted }}>
           <RefreshCw size={14} />
         </button>
         <button onClick={() => setTermOpen(s => !s)} title="Terminal"
           className="p-2 rounded transition-colors"
-          style={{ color: termOpen ? 'white' : '#6b7280', background: termOpen ? 'rgba(255,255,255,0.1)' : 'transparent' }}>
+          style={{ color: termOpen ? ui.text : ui.textMuted, background: termOpen ? ui.accentSoft : 'transparent' }}>
           <TermIcon size={14} />
         </button>
       </div>
@@ -371,17 +384,17 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
       {/* Sidebar */}
       {sidebarOpen && (
         <div className="w-52 flex-shrink-0 flex flex-col overflow-hidden"
-          style={{ background: '#1a1a2e', borderRight: '1px solid #2a2a3e' }}>
+          style={{ background: ui.chrome, borderRight: `1px solid ${ui.border}` }}>
           {/* Sidebar header */}
-          <div className="flex items-center justify-between px-3 py-2 flex-shrink-0" style={{ borderBottom: '1px solid #2a2a3e' }}>
-            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#6b7280' }}>Explorer</span>
+          <div className="flex items-center justify-between px-3 py-2 flex-shrink-0" style={{ borderBottom: `1px solid ${ui.border}` }}>
+            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: ui.textMuted }}>Explorer</span>
             <div className="flex gap-0.5">
               <button onClick={() => startCreate('', 'file')} title="New file"
-                className="p-1 rounded transition-colors hover:text-white" style={{ color: '#6b7280' }}><FilePlus size={12} /></button>
+                className="p-1 rounded transition-colors" style={{ color: ui.textMuted }}><FilePlus size={12} /></button>
               <button onClick={() => startCreate('', 'folder')} title="New folder"
-                className="p-1 rounded transition-colors hover:text-white" style={{ color: '#6b7280' }}><FolderPlus size={12} /></button>
+                className="p-1 rounded transition-colors" style={{ color: ui.textMuted }}><FolderPlus size={12} /></button>
               <button onClick={openFolder} title="Open folder"
-                className="p-1 rounded transition-colors hover:text-white" style={{ color: '#6b7280' }}><FolderOpen size={12} /></button>
+                className="p-1 rounded transition-colors" style={{ color: ui.textMuted }}><FolderOpen size={12} /></button>
             </div>
           </div>
 
@@ -396,7 +409,7 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
                   onBlur={commitCreate}
                   onKeyDown={e => { if (e.key === 'Enter') commitCreate(); if (e.key === 'Escape') setCreating(null); }}
                   className="flex-1 text-xs rounded px-1.5 py-0.5 outline-none"
-                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid #3b82f6', color: 'white', fontFamily: 'inherit', minWidth: 0 }}
+                  style={{ background: ui.chromeAlt, border: `1px solid ${ui.accent}`, color: ui.text, fontFamily: 'inherit', minWidth: 0 }}
                   placeholder={creating.type === 'file' ? 'filename.ts' : 'folder-name'} />
               </div>
             )}
@@ -408,7 +421,7 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Tabs */}
         <div className="flex items-center overflow-x-auto flex-shrink-0 min-h-[32px]"
-          style={{ background: '#1a1a2e', borderBottom: '1px solid #2a2a3e' }}>
+          style={{ background: ui.chrome, borderBottom: `1px solid ${ui.border}` }}>
           {openTabs.map(id => {
             const f = files.find(f => f.id === id);
             if (!f) return null;
@@ -417,9 +430,9 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
               <div key={id} onClick={() => setActiveTab(id)}
                 className="flex items-center gap-1.5 px-3 py-1.5 cursor-pointer whitespace-nowrap flex-shrink-0 text-xs transition-colors"
                 style={{
-                  background: isActive ? '#2d2d44' : 'transparent',
-                  color: isActive ? 'white' : '#6b7280',
-                  borderRight: '1px solid #2a2a3e',
+                  background: isActive ? ui.chromeAlt : 'transparent',
+                  color: isActive ? ui.text : ui.textMuted,
+                  borderRight: `1px solid ${ui.border}`,
                   borderTop: `2px solid ${isActive ? fileColor(f.name) : 'transparent'}`,
                 }}>
                 <FileCode size={10} style={{ color: fileColor(f.name) }} />
@@ -429,7 +442,7 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
               </div>
             );
           })}
-          {openTabs.length === 0 && <span className="px-4 text-xs" style={{ color: '#4b5563' }}>No files open</span>}
+          {openTabs.length === 0 && <span className="px-4 text-xs" style={{ color: ui.textMuted }}>No files open</span>}
         </div>
 
         {/* Monaco */}
@@ -461,18 +474,18 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-full gap-4"
-              style={{ background: '#12121f', color: '#4b5563' }}>
+              style={{ background: 'var(--bg)', color: ui.textMuted }}>
               <FileCode size={32} style={{ opacity: 0.3 }} />
               <p className="text-sm font-semibold">Open a file or create a new one</p>
               <div className="flex gap-2">
                 <button onClick={() => startCreate('', 'file')}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
-                  style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' }}>
+                  style={{ background: ui.accentSoft, color: ui.accent, border: `1px solid ${ui.border}` }}>
                   <FilePlus size={12} /> New file
                 </button>
                 <button onClick={openFolder}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
-                  style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+                  style={{ background: ui.goldSoft, color: ui.gold, border: `1px solid ${ui.border}` }}>
                   <FolderOpen size={12} /> Open folder
                 </button>
               </div>
@@ -482,22 +495,22 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
 
         {/* Terminal */}
         {termOpen && (
-          <div className="flex-shrink-0 flex flex-col" style={{ height: 160, background: '#0d0d1a', borderTop: '1px solid #2a2a3e' }}>
-            <div className="flex items-center justify-between px-3 py-1" style={{ borderBottom: '1px solid #2a2a3e' }}>
-              <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color: '#6b7280' }}>
+          <div className="flex-shrink-0 flex flex-col" style={{ height: 160, background: ui.chrome, borderTop: `1px solid ${ui.border}` }}>
+            <div className="flex items-center justify-between px-3 py-1" style={{ borderBottom: `1px solid ${ui.border}` }}>
+              <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color: ui.textMuted }}>
                 <TermIcon size={10} /> Terminal
               </span>
-              <button onClick={() => setTermOpen(false)} style={{ color: '#6b7280' }}><X size={12} /></button>
+              <button onClick={() => setTermOpen(false)} style={{ color: ui.textMuted }}><X size={12} /></button>
             </div>
-            <div className="flex-1 overflow-y-auto px-3 py-2 text-xs leading-relaxed" style={{ color: '#4ade80', fontFamily: 'inherit' }}>
+            <div className="flex-1 overflow-y-auto px-3 py-2 text-xs leading-relaxed" style={{ color: ui.accent, fontFamily: '"Fira Code", Consolas, monospace' }}>
               {termLines.map((line, i) => (
-                <div key={i} style={{ color: line.startsWith('$') ? '#86efac' : '#4b5563' }}>{line}</div>
+                <div key={i} style={{ color: line.startsWith('$') ? ui.accent : ui.textMuted }}>{line}</div>
               ))}
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5" style={{ borderTop: '1px solid #2a2a3e' }}>
-              <span className="text-xs" style={{ color: '#4ade80' }}>$</span>
+            <div className="flex items-center gap-2 px-3 py-1.5" style={{ borderTop: `1px solid ${ui.border}` }}>
+              <span className="text-xs" style={{ color: ui.accent }}>$</span>
               <input value={termInput} onChange={e => setTermInput(e.target.value)} onKeyDown={handleTerm}
-                className="flex-1 bg-transparent text-xs outline-none" style={{ color: 'white', fontFamily: 'inherit' }}
+                className="flex-1 bg-transparent text-xs outline-none" style={{ color: ui.text, fontFamily: '"Fira Code", Consolas, monospace' }}
                 placeholder="Enter command…" />
             </div>
           </div>
@@ -507,4 +520,3 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
     </div>
   );
 };
-
