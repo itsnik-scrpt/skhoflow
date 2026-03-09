@@ -1,1 +1,17 @@
-{\n  "name": "skhoflow",\n  "private": true,\n  "workspaces": [\n    "packages/*"\n  ]\n}
+{
+  "name": "skhoflow",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "turbo": "^1.10.0"
+  }
+}
