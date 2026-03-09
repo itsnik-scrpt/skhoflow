@@ -259,6 +259,7 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
     accentSoft: 'var(--accent-soft)',
     gold: 'var(--gold)',
     goldSoft: 'var(--gold-soft)',
+    monoFont: '"Fira Code", Consolas, monospace',
   } as const;
 
   /* ── Tree node renderer ── */
@@ -502,7 +503,7 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
               </span>
               <button onClick={() => setTermOpen(false)} style={{ color: ui.textMuted }}><X size={12} /></button>
             </div>
-            <div className="flex-1 overflow-y-auto px-3 py-2 text-xs leading-relaxed" style={{ color: ui.accent, fontFamily: '"Fira Code", Consolas, monospace' }}>
+            <div className="flex-1 overflow-y-auto px-3 py-2 text-xs leading-relaxed" style={{ color: ui.accent, fontFamily: ui.monoFont }}>
               {termLines.map((line, i) => (
                 <div key={i} style={{ color: line.startsWith('$') ? ui.accent : ui.textMuted }}>{line}</div>
               ))}
@@ -510,7 +511,7 @@ export const IDEPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode }) 
             <div className="flex items-center gap-2 px-3 py-1.5" style={{ borderTop: `1px solid ${ui.border}` }}>
               <span className="text-xs" style={{ color: ui.accent }}>$</span>
               <input value={termInput} onChange={e => setTermInput(e.target.value)} onKeyDown={handleTerm}
-                className="flex-1 bg-transparent text-xs outline-none" style={{ color: ui.text, fontFamily: '"Fira Code", Consolas, monospace' }}
+                className="flex-1 bg-transparent text-xs outline-none" style={{ color: ui.text, fontFamily: ui.monoFont }}
                 placeholder="Enter command…" />
             </div>
           </div>

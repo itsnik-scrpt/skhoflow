@@ -368,10 +368,10 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
           )}
 
           <div className="ml-auto flex items-center gap-1">
-            <button onClick={undo} className="p-1.5 rounded-md hover:opacity-80 transition-all" style={{ color: 'var(--text-3)', background: 'var(--bg-3)' }}><Undo2 size={12} /></button>
+            <button onClick={undo} className="p-1.5 rounded-md hover:opacity-80 transition-all" style={{ color: ui.textMuted, background: ui.panelAlt }}><Undo2 size={12} /></button>
             <button onClick={redo} className="p-1.5 rounded-md hover:opacity-80 transition-all" style={{ color: ui.textMuted, background: ui.panelAlt }}><Redo2 size={12} /></button>
             <div className="w-px h-4 mx-0.5" style={{ background: ui.border }} />
-            <label className="text-xs flex items-center gap-1 cursor-pointer" style={{ color: 'var(--text-3)', fontFamily: 'Nunito, sans-serif' }}>
+            <label className="text-xs flex items-center gap-1 cursor-pointer" style={{ color: ui.textMuted, fontFamily: 'Nunito, sans-serif' }}>
               BG
               <input type="color" value={slide?.background || '#ffffff'}
                 onChange={e => mutateSlide(s => ({ ...s, background: e.target.value }))}
@@ -492,7 +492,7 @@ export const SlidesPanel: React.FC<Props> = ({ docId, isFocused, standaloneMode 
             </button>
           </>
         ) : (
-          <p className="text-xs" style={{ color: 'var(--text-3)', fontFamily: 'Nunito, sans-serif' }}>Select an element.</p>
+          <p className="text-xs" style={{ color: ui.textMuted, fontFamily: 'Nunito, sans-serif' }}>Select an element.</p>
         )}
         <div>
           <label className="text-[9px] font-black uppercase tracking-wider block mb-1" style={{ color: 'var(--text-3)', fontFamily: 'Nunito, sans-serif' }}>Notes</label>
