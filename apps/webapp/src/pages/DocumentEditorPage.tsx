@@ -162,7 +162,7 @@ export const AdvancedDocumentEditor: React.FC = () => {
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result ?? ''));
-      reader.onerror = () => reject(reader.error);
+      reader.onerror = () => reject(new Error('Failed to read image file'));
       reader.readAsDataURL(file);
     });
     (editor.chain().focus() as any).setImage({ src: dataUrl, alt: file.name }).run();
@@ -303,7 +303,7 @@ export const AdvancedDocumentEditor: React.FC = () => {
           <Btn onClick={() => imageInputRef.current?.click()}  title="Upload image"><Plus size={16} /></Btn>
           <Btn onClick={() => (editor.chain().focus() as any).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert table"><TableIcon size={16} /></Btn>
           <Btn onClick={() => (editor.chain().focus() as any).addRowAfter().run()} title="Add row"><Plus size={16} /></Btn>
-          <Btn onClick={() => (editor.chain().focus() as any).addColumnAfter().run()} title="Add column"><Plus size={16} /></Btn>
+          <Btn onClick={() => (editor.chain().focus() as any).addColumnAfter().run()} title="Add column"><Plus size={16} className="rotate-90" /></Btn>
           <Btn onClick={() => (editor.chain().focus() as any).deleteTable().run()} title="Delete table"><Trash2 size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Blockquote"><Quote size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()}  active={editor.isActive('codeBlock')}  title="Code Block"><Code size={16} /></Btn>
@@ -319,7 +319,7 @@ export const AdvancedDocumentEditor: React.FC = () => {
           .doc-pm .ProseMirror h1             { font-size: 2em;   font-weight: 700; margin: 1.3em 0 0.4em; }
           .doc-pm .ProseMirror h2             { font-size: 1.5em; font-weight: 600; margin: 1.1em 0 0.4em; }
           .doc-pm .ProseMirror h3             { font-size: 1.2em; font-weight: 600; margin: 0.9em 0 0.3em; }
-           .doc-pm .ProseMirror a              { color: var(--accent); text-decoration: underline; cursor: pointer; }
+          .doc-pm .ProseMirror a              { color: var(--accent); text-decoration: underline; cursor: pointer; }
           .doc-pm .ProseMirror img            { max-width: 100%; height: auto; border-radius: 4px; margin: 0.8em 0; display: block; }
           .doc-pm .ProseMirror table          { border-collapse: collapse; table-layout: fixed; width: 100%; margin: 1em 0; }
           .doc-pm .ProseMirror th,
@@ -369,12 +369,12 @@ export const AdvancedDocumentEditor: React.FC = () => {
                 width:     pageWpx,
                 height:    pageHpx,
                 background: '#ffffff',
-                 boxShadow: '0 16px 38px rgba(15, 23, 42, 0.16), 0 3px 8px rgba(15, 23, 42, 0.08)',
-                 borderRadius: 12,
-                 transition: 'top 120ms ease-out',
-                 zIndex:    0,
-                 pointerEvents: 'none',
-               }}
+                boxShadow: '0 16px 38px rgba(15, 23, 42, 0.16), 0 3px 8px rgba(15, 23, 42, 0.08)',
+                borderRadius: 12,
+                transition: 'top 120ms ease-out',
+                zIndex:    0,
+                pointerEvents: 'none',
+              }}
             >
               {/* Page number */}
               <span style={{
@@ -396,10 +396,10 @@ export const AdvancedDocumentEditor: React.FC = () => {
                 left:       -80,          // extend far past page edges
                 right:      -80,
                 height:     PAGE_GAP,
-                 background: 'var(--bg-3)',
-                 zIndex:     2,            // above editor (1) → clips it visually
-                 pointerEvents: 'none',
-               }}
+                background: 'var(--bg-3)',
+                zIndex:     2,            // above editor (1) → clips it visually
+                pointerEvents: 'none',
+              }}
             />
           ))}
 
