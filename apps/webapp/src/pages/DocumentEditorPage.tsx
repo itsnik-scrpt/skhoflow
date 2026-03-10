@@ -23,7 +23,7 @@ import {
   Bold, Italic, UnderlineIcon, Strikethrough, Superscript as SupIcon, Subscript as SubIcon,
   Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, CheckSquare, Quote, Code, Table as TableIcon, Image as ImageIcon, Link as LinkIcon,
-  Undo2, Redo2, Highlighter, FolderOpen, Save, FileText,
+  Undo2, Redo2, Highlighter, FolderOpen, Save, FileText, Plus, Trash2, Copy,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SaveDialog, SaveFormat } from '../components/workspace/SaveDialog';
@@ -31,13 +31,15 @@ import { downloadFile } from '../utils/saveFile';
 
 const FONTS      = ['Nunito', 'Arial', 'Calibri', 'Cambria', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana'];
 const FONT_SIZES = ['8', '9', '10', '11', '12', '14', '16', '18', '20', '24', '28', '32', '36', '48', '72'];
+const DEFAULT_TEXT_COLORS = ['#111827', '#334155', '#6b7280', '#c0392b', '#d4621a', '#c9962a', '#0f766e', '#2563eb', '#7c3aed'];
+const DEFAULT_HIGHLIGHT_COLORS = ['#fef08a', '#fde68a', '#fca5a5', '#a7f3d0', '#bfdbfe', '#ddd6fe', '#fecaca', '#f9a8d4'];
 
 // ── A4 geometry ───────────────────────────────────────────────────────────────
 const A4_W_MM   = 210;
 const A4_H_MM   = 297;
 const MARGIN_MM = 25;
 const MM_PX     = 96 / 25.4;   // CSS px per mm at 96 dpi
-const PAGE_GAP  = 20;           // px gap between page cards
+const PAGE_GAP  = 28;           // px gap between page cards
 
 // ── Toolbar helpers ───────────────────────────────────────────────────────────
 const Btn: React.FC<{ onClick: () => void; active?: boolean; title: string; children: React.ReactNode }> = ({
@@ -59,9 +61,13 @@ export const AdvancedDocumentEditor: React.FC = () => {
   const [dirty,       setDirty]       = useState(false);
   const [pageCount,   setPageCount]   = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [textColor, setTextColor] = useState('#111827');
+  const [highlightColor, setHighlightColor] = useState('#fef08a');
+  const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
   const scrollRef  = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Derived geometry
   const scale      = zoom / 100;
@@ -86,10 +92,10 @@ export const AdvancedDocumentEditor: React.FC = () => {
       TaskList,
       TaskItem.configure({ nested: true }),
       Superscript, Subscript,
-    ],
+    ] as any,
     content: '<h1>Untitled Document</h1><p>Start writing your masterpiece here…</p>',
     onUpdate: () => setDirty(true),
-  });
+  } as any);
 
   // ── Page-count recomputation ──────────────────────────────────────────────
   const recomputePages = useCallback(() => {
@@ -147,7 +153,21 @@ export const AdvancedDocumentEditor: React.FC = () => {
 
   const addImage = () => {
     const url = window.prompt('Enter image URL:');
-    if (url && editor) editor.chain().focus().setImage({ src: url }).run();
+    if (url && editor) (editor.chain().focus() as any).setImage({ src: url }).run();
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editor) return;
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+    (editor.chain().focus() as any).setImage({ src: dataUrl, alt: file.name }).run();
+    setDirty(true);
+    e.target.value = '';
   };
 
   const setLink = () => {
@@ -155,8 +175,23 @@ export const AdvancedDocumentEditor: React.FC = () => {
     const prev = editor.getAttributes('link').href;
     const url  = window.prompt('URL', prev);
     if (url === null) return;
-    if (url === '') { editor.chain().focus().extendMarkRange('link').unsetLink().run(); return; }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    if (url === '') { (editor.chain().focus().extendMarkRange('link') as any).unsetLink().run(); return; }
+    (editor.chain().focus().extendMarkRange('link') as any).setLink({ href: url }).run();
+  };
+
+  const copySelection = async () => {
+    if (!editor) return;
+    const selectionText = editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to, '\n').trim();
+    if (!selectionText) return;
+    try {
+      await navigator.clipboard.writeText(selectionText);
+      setCopyMessage('Copied');
+      window.setTimeout(() => setCopyMessage(null), 1800);
+    } catch (error) {
+      console.error(error);
+      setCopyMessage('Copy failed');
+      window.setTimeout(() => setCopyMessage(null), 2200);
+    }
   };
 
   if (!editor) return null;
@@ -167,40 +202,47 @@ export const AdvancedDocumentEditor: React.FC = () => {
   const totalColumnH = pageCount * pageHpx + (pageCount - 1) * PAGE_GAP;
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: 'system-ui,sans-serif', background: '#f0f0f0' }}>
+    <div className="flex flex-col h-full" style={{ fontFamily: 'Nunito, system-ui, sans-serif', background: 'var(--bg)' }}>
       <SaveDialog open={saveOpen} defaultName={fileName} type="document" onSave={handleSave} onClose={() => setSaveOpen(false)} />
+      <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
 
       {/* ── Title bar ── */}
-      <div className="flex items-center gap-4 px-4 py-2 bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700 shadow-sm z-10 flex-shrink-0">
-        <FileText size={20} className="text-blue-600 dark:text-blue-400" />
+      <div className="glass flex items-center gap-4 px-4 py-2.5 border-b z-10 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+        <FileText size={20} style={{ color: 'var(--accent)' }} />
         <input value={fileName} onChange={e => { setFileName(e.target.value); setDirty(true); }}
-          className="text-lg font-medium bg-transparent outline-none border-b border-transparent hover:border-gray-300 focus:border-blue-500 transition-colors w-64 text-gray-800 dark:text-gray-100" />
-        {dirty && <span className="text-xs text-gray-400">● Unsaved changes</span>}
+          className="text-lg font-medium bg-transparent outline-none border-b border-transparent w-64 transition-colors"
+          style={{ color: 'var(--text-1)' }} />
+        {dirty && <span className="text-xs" style={{ color: 'var(--text-3)' }}>● Unsaved changes</span>}
         <div className="ml-auto flex items-center gap-2">
           <motion.button onClick={openFile} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-zinc-700 dark:text-gray-200 dark:hover:bg-zinc-600 transition-colors">
+            className="flex items-center gap-2 px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors"
+            style={{ background: 'var(--surface-2)', color: 'var(--text-2)', border: '1px solid var(--border)' }}>
             <FolderOpen size={16} /> Open
           </motion.button>
           <motion.button onClick={() => setSaveOpen(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors">
+            className="flex items-center gap-2 px-4 py-1.5 rounded-xl text-sm font-semibold text-white shadow-sm transition-colors"
+            style={{ background: 'var(--accent)' }}>
             <Save size={16} /> Save
           </motion.button>
         </div>
       </div>
 
       {/* ── Ribbon toolbar ── */}
-      <div className="flex-shrink-0 bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700 z-10">
+      <div className="glass flex-shrink-0 border-b z-10" style={{ borderColor: 'var(--border)' }}>
         <div className="flex items-center gap-1 px-4 py-2 flex-wrap">
           <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo"><Undo2 size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo"><Redo2 size={16} /></Btn>
+          <Btn onClick={copySelection} title="Copy Selection"><Copy size={16} /></Btn>
           <Sep />
           <select onChange={e => editor.chain().focus().setFontFamily(e.target.value).run()}
-            className="text-sm rounded border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 px-2 py-1 outline-none text-gray-700 dark:text-gray-200 w-32 cursor-pointer">
+            className="text-sm rounded-xl px-2 py-1 outline-none w-32 cursor-pointer"
+            style={{ background: 'var(--surface-2)', color: 'var(--text-2)', border: '1px solid var(--border)' }}>
             <option value="">Default Font</option>
             {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
           <select onChange={e => editor.chain().focus().setMark('textStyle', { fontSize: `${e.target.value}pt` }).run()}
-            className="text-sm rounded border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 px-2 py-1 outline-none text-gray-700 dark:text-gray-200 w-16 cursor-pointer ml-1">
+            className="text-sm rounded-xl px-2 py-1 outline-none w-16 cursor-pointer ml-1"
+            style={{ background: 'var(--surface-2)', color: 'var(--text-2)', border: '1px solid var(--border)' }}>
             <option value="">Size</option>
             {FONT_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -209,12 +251,39 @@ export const AdvancedDocumentEditor: React.FC = () => {
           <Btn onClick={() => editor.chain().focus().toggleItalic().run()}      active={editor.isActive('italic')}      title="Italic"><Italic size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().toggleUnderline().run()}   active={editor.isActive('underline')}   title="Underline"><UnderlineIcon size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().toggleStrike().run()}      active={editor.isActive('strike')}      title="Strikethrough"><Strikethrough size={16} /></Btn>
-          <Btn onClick={() => editor.chain().focus().toggleSubscript().run()}   active={editor.isActive('subscript')}   title="Subscript"><SubIcon size={16} /></Btn>
-          <Btn onClick={() => editor.chain().focus().toggleSuperscript().run()} active={editor.isActive('superscript')} title="Superscript"><SupIcon size={16} /></Btn>
-          <div className="relative flex items-center ml-1" title="Text Color">
-            <input type="color" onChange={e => editor.chain().focus().setColor(e.target.value).run()} className="w-6 h-6 p-0 border-0 rounded cursor-pointer" />
+          <Btn onClick={() => (editor.chain().focus() as any).toggleSubscript().run()}   active={editor.isActive('subscript')}   title="Subscript"><SubIcon size={16} /></Btn>
+          <Btn onClick={() => (editor.chain().focus() as any).toggleSuperscript().run()} active={editor.isActive('superscript')} title="Superscript"><SupIcon size={16} /></Btn>
+          <div className="flex items-center ml-1 gap-1.5" title="Text Color">
+            <input
+              type="color"
+              value={textColor}
+              onChange={e => { setTextColor(e.target.value); editor.chain().focus().setColor(e.target.value).run(); }}
+              className="w-7 h-7 p-0 border-0 rounded-lg cursor-pointer"
+            />
+            <div className="flex items-center gap-1">
+              {DEFAULT_TEXT_COLORS.map(color => (
+                <button
+                  key={color}
+                  onClick={() => { setTextColor(color); editor.chain().focus().setColor(color).run(); }}
+                  className="w-4 h-4 rounded-full border"
+                  style={{ background: color, borderColor: color === textColor ? 'var(--text-1)' : 'var(--border)' }}
+                />
+              ))}
+            </div>
           </div>
-          <Btn onClick={() => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run()} active={editor.isActive('highlight')} title="Highlight"><Highlighter size={16} /></Btn>
+          <div className="flex items-center gap-1">
+            <Btn onClick={() => editor.chain().focus().toggleHighlight({ color: highlightColor }).run()} active={editor.isActive('highlight')} title="Highlight"><Highlighter size={16} /></Btn>
+            <div className="flex items-center gap-1">
+              {DEFAULT_HIGHLIGHT_COLORS.map(color => (
+                <button
+                  key={color}
+                  onClick={() => setHighlightColor(color)}
+                  className="w-4 h-4 rounded-sm border"
+                  style={{ background: color, borderColor: color === highlightColor ? 'var(--text-1)' : 'var(--border)' }}
+                />
+              ))}
+            </div>
+          </div>
           <Sep />
           <Btn onClick={() => editor.chain().focus().setTextAlign('left').run()}    active={editor.isActive({ textAlign: 'left' })}    title="Left"><AlignLeft size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().setTextAlign('center').run()}  active={editor.isActive({ textAlign: 'center' })}  title="Center"><AlignCenter size={16} /></Btn>
@@ -227,18 +296,22 @@ export const AdvancedDocumentEditor: React.FC = () => {
           <Sep />
           <Btn onClick={() => editor.chain().focus().toggleBulletList().run()}  active={editor.isActive('bulletList')}  title="Bullet List"><List size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered List"><ListOrdered size={16} /></Btn>
-          <Btn onClick={() => editor.chain().focus().toggleTaskList().run()}    active={editor.isActive('taskList')}    title="Checklist"><CheckSquare size={16} /></Btn>
+          <Btn onClick={() => (editor.chain().focus() as any).toggleTaskList().run()}    active={editor.isActive('taskList')}    title="Checklist"><CheckSquare size={16} /></Btn>
           <Sep />
           <Btn onClick={setLink}   active={editor.isActive('link')} title="Link"><LinkIcon size={16} /></Btn>
-          <Btn onClick={addImage}  title="Image"><ImageIcon size={16} /></Btn>
-          <Btn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Table"><TableIcon size={16} /></Btn>
+          <Btn onClick={addImage}  title="Image URL"><ImageIcon size={16} /></Btn>
+          <Btn onClick={() => imageInputRef.current?.click()}  title="Upload image"><Plus size={16} /></Btn>
+          <Btn onClick={() => (editor.chain().focus() as any).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert table"><TableIcon size={16} /></Btn>
+          <Btn onClick={() => (editor.chain().focus() as any).addRowAfter().run()} title="Add row"><Plus size={16} /></Btn>
+          <Btn onClick={() => (editor.chain().focus() as any).addColumnAfter().run()} title="Add column"><Plus size={16} /></Btn>
+          <Btn onClick={() => (editor.chain().focus() as any).deleteTable().run()} title="Delete table"><Trash2 size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Blockquote"><Quote size={16} /></Btn>
           <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()}  active={editor.isActive('codeBlock')}  title="Code Block"><Code size={16} /></Btn>
         </div>
       </div>
 
       {/* ── Scrollable canvas ── */}
-      <div ref={scrollRef} className="flex-1 overflow-auto" style={{ background: '#d0d0d0' }}>
+      <div ref={scrollRef} className="flex-1 overflow-auto" style={{ background: 'linear-gradient(180deg, var(--bg-3), var(--bg))' }}>
 
         <style>{`
           .doc-pm .ProseMirror { outline: none; color: #111; min-height: 40px; }
@@ -246,7 +319,7 @@ export const AdvancedDocumentEditor: React.FC = () => {
           .doc-pm .ProseMirror h1             { font-size: 2em;   font-weight: 700; margin: 1.3em 0 0.4em; }
           .doc-pm .ProseMirror h2             { font-size: 1.5em; font-weight: 600; margin: 1.1em 0 0.4em; }
           .doc-pm .ProseMirror h3             { font-size: 1.2em; font-weight: 600; margin: 0.9em 0 0.3em; }
-          .doc-pm .ProseMirror a              { color: #2563eb; text-decoration: underline; cursor: pointer; }
+           .doc-pm .ProseMirror a              { color: var(--accent); text-decoration: underline; cursor: pointer; }
           .doc-pm .ProseMirror img            { max-width: 100%; height: auto; border-radius: 4px; margin: 0.8em 0; display: block; }
           .doc-pm .ProseMirror table          { border-collapse: collapse; table-layout: fixed; width: 100%; margin: 1em 0; }
           .doc-pm .ProseMirror th,
@@ -296,11 +369,12 @@ export const AdvancedDocumentEditor: React.FC = () => {
                 width:     pageWpx,
                 height:    pageHpx,
                 background: '#ffffff',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.20), 0 3px 16px rgba(0,0,0,0.10)',
-                borderRadius: 1,
-                zIndex:    0,
-                pointerEvents: 'none',
-              }}
+                 boxShadow: '0 16px 38px rgba(15, 23, 42, 0.16), 0 3px 8px rgba(15, 23, 42, 0.08)',
+                 borderRadius: 12,
+                 transition: 'top 120ms ease-out',
+                 zIndex:    0,
+                 pointerEvents: 'none',
+               }}
             >
               {/* Page number */}
               <span style={{
@@ -322,10 +396,10 @@ export const AdvancedDocumentEditor: React.FC = () => {
                 left:       -80,          // extend far past page edges
                 right:      -80,
                 height:     PAGE_GAP,
-                background: '#d0d0d0',
-                zIndex:     2,            // above editor (1) → clips it visually
-                pointerEvents: 'none',
-              }}
+                 background: 'var(--bg-3)',
+                 zIndex:     2,            // above editor (1) → clips it visually
+                 pointerEvents: 'none',
+               }}
             />
           ))}
 
@@ -348,19 +422,20 @@ export const AdvancedDocumentEditor: React.FC = () => {
       </div>
 
       {/* ── Status bar ── */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 border-t border-gray-200 dark:border-zinc-700 text-xs text-gray-500 dark:text-gray-400 z-10">
+      <div className="glass flex-shrink-0 flex items-center justify-between px-4 py-1.5 border-t text-xs z-10" style={{ borderColor: 'var(--border)', color: 'var(--text-3)' }}>
         <div className="flex gap-4">
           <span>Page {currentPage} of {pageCount}</span>
           <span>{words} words</span>
           <span>{chars} characters</span>
+          {copyMessage && <span>{copyMessage}</span>}
         </div>
 
         <div className="flex items-center gap-3">
           <span className="uppercase tracking-wider">A4 Format</span>
-          <div className="flex items-center gap-1 bg-white dark:bg-zinc-700 rounded border border-gray-200 dark:border-zinc-600 px-1">
-            <button onClick={() => setZoom(z => Math.max(50, z - 10))} className="px-2 hover:text-blue-600">−</button>
+          <div className="flex items-center gap-1 rounded-xl px-1" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+            <button onClick={() => setZoom(z => Math.max(50, z - 10))} className="px-2">−</button>
             <span className="w-12 text-center font-medium select-none">{zoom}%</span>
-            <button onClick={() => setZoom(z => Math.min(200, z + 10))} className="px-2 hover:text-blue-600">+</button>
+            <button onClick={() => setZoom(z => Math.min(200, z + 10))} className="px-2">+</button>
           </div>
         </div>
       </div>
